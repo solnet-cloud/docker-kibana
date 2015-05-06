@@ -2,8 +2,8 @@
 # Solnet Solutions
 # Version: 4.0.2
 
-# Pull base image (CentOS 7)
-FROM centos:7
+# Pull base image (Ubuntu 14.04)
+FROM ubuntu:14.04
 
 # Build Instructions:
 # When building use the following flags
@@ -27,11 +27,11 @@ ENV KB_PKG_NAME kibana-4.0.2-linux-x64
 
 # Install any required preqs
 RUN \
-    yum install wget tar -y && \
-    wget http://stedolan.github.io/jq/download/linux64/jq && \
-    mv jq /usr/local/bin/jq && \
-    chmod +x /usr/local/bin/jq
-
+    apt-get update && \
+    apt-get install jq -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+     
 # Prepare the various directories in /kb-data/
 RUN \
     mkdir /kb-data
