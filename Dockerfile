@@ -37,5 +37,5 @@ RUN \
   wget https://download.elastic.co/kibana/kibana/$KB_PKG_NAME.tar.gz && \
   tar xvzf $KB_PKG_NAME.tar.gz && \
   rm -f $KB_PKG_NAME.tar.gz && \
-  mv /$KB_PKG_NAME/* /usr/share/nginx/html/ %% \
+  mv /$KB_PKG_NAME/* /usr/share/nginx/html/ && \
   rmdir /$KB_PKG_NAME
