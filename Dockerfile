@@ -27,8 +27,9 @@ ENV KB_PKG_NAME kibana-4.0.2-linux-x64
 
 # Install any required preqs
 RUN \
-    wget http://stedolan.github.io/jq/download/linux64/jq && \\
-    mv jq /usr/local/bin/jq
+    wget http://stedolan.github.io/jq/download/linux64/jq && \
+    mv jq /usr/local/bin/jq && \
+    chmod +x /usr/local/bin/jq
 
 # Prepare the various directories in /kb-data/
 RUN \
