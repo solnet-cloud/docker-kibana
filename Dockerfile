@@ -28,10 +28,11 @@ ENV KB_PKG_NAME kibana-4.0.2-linux-x64
 # Install any required preqs
 RUN \
     apt-get update && \
-    apt-get install jq -y && \
+    apt-get upgrade && \
+    apt-get install jq wget -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-     
+
 # Prepare the various directories in /kb-data/
 RUN \
     mkdir /kb-data
