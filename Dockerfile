@@ -26,6 +26,10 @@ image." Version="4.0.2"
 # Set the Logstash Version and other enviroment variables
 ENV KB_PKG_NAME kibana-4.0.2-linux-x64
 
+# Install any prerequiste packages
+RUN \
+    apt-get update && \
+    apt-get install wget -y
 
 # Install Kibana and delete the Kibana tarball
 RUN \
