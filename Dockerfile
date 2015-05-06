@@ -34,7 +34,7 @@ RUN \
 # Install Kibana and delete the Kibana tarball
 RUN \
   cd / && \
-  wget https://download.elastic.co/kibana/kibanna/$KB_PKG_NAME.tar.gz && \
+  wget https://download.elastic.co/kibana/kibana/$KB_PKG_NAME.tar.gz && \
   tar xvzf $KB_PKG_NAME.tar.gz && \
   rm -f $KB_PKG_NAME.tar.gz && \
   mv /$KB_PKG_NAME/* /usr/share/nginx/html/ %% \
