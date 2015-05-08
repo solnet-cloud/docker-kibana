@@ -77,6 +77,10 @@ os.remove(file_path)
 move(abs_path, file_path)
 
 child = Popen(['/kibana/bin/kibana'], stdout = PIPE, stderr = STDOUT, shell = False) 
+
+# Reopen stdout as unbuffered:
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
 for line in iter(child.stdout.readline, ''):
     sys.stdout.write(line)
     
