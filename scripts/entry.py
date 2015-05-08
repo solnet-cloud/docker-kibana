@@ -84,5 +84,6 @@ os.close(fh)
 os.remove(file_path)
 move(abs_path, file_path)
 
-child = Popen(['/kibana/bin/kibana'], stdout = PIPE, stderr = PIPE, shell = False)      
+child = Popen(['/kibana/bin/kibana'], stdout = PIPE, stderr = PIPE, shell = False) 
+child.communicate()
 sys.exit(child.returncode)
