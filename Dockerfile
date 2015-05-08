@@ -31,7 +31,7 @@ ENV KB_PKG_NAME kibana-4.0.2-linux-x64
 # Install any required preqs
 RUN \
     apt-get update && \
-    apt-get install wget python python-pycurl -y && \
+    apt-get install wget python python-requests -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
