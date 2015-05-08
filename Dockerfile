@@ -16,9 +16,12 @@ FROM ubuntu:14.04
 # Information
 MAINTAINER Taylor Bertie <taylor.bertie@solnet.co.nz>
 LABEL Description="This image is used to stand up an unsecured kibana instance. Provide the elasticsearch URL as the \
-first command line arguement to this container on start." Version="4.0.2"
+--es_url (no default; required) argument on startup" Version="4.0.2"
 
 # Patch notes:
+# Version 4.0.2-r1
+#       - Moved kibana.yml to templates as it has a varible in it that is maintained by the entry script.
+#       - Rewrote the entry script in python
 # Version 4.0.2:
 #       - First working version of Kibana
 
@@ -28,7 +31,6 @@ ENV KB_PKG_NAME kibana-4.0.2-linux-x64
 # Install any required preqs
 RUN \
     apt-get update && \
-    apt-get upgrade -y && \
     apt-get install jq wget curl -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -47,15 +49,15 @@ RUN \
   rm /kibana/config/kibana.yml
   
 # Mount the configuration files
-ADD config/kibana.yml /kibana/config/kibana.yml
-ADD scripts/entry.sh /usr/local/bin/entry.sh
-RUN chmod +x /usr/local/bin/entry.sh
+ADD templates/kibana.yml /kibana/config/kibana.yml
+ADD scripts/entry.py /usr/local/bin/entry
+RUN chmod +x /usr/local/bin/entry
 
 # Define a working directory 
 WORKDIR /kb-data
 
 # Define the default command as an entrypoint
-ENTRYPOINT ["/usr/local/bin/entry.sh"]
+ENTRYPOINT ["/usr/local/bin/entry"]
 
 # Expose ports
 # Expose 5601: Kibana default HTTP port
