@@ -4,7 +4,6 @@
 
 # Import required libaries
 import sys,os
-import signal
 import argparse
 import urlparse
 import requests
@@ -12,14 +11,7 @@ import json
 from tempfile import mkstemp
 from shutil import move
 from requests.exceptions import ConnectionError
-from subprocess import Popen, PIPE
-
-def term_handler(signal, frame):
-    try:
-        child.terminate()
-    except NameError:
-        pass
-    sys.exit(0)
+from subprocess import Popen, PIPE, STDOUT
 
 # Argument Parser
 argparser = argparse.ArgumentParser(description='Run a docker container containing a Kibana Instance')
@@ -84,6 +76,6 @@ os.close(fh)
 os.remove(file_path)
 move(abs_path, file_path)
 
-child = Popen(['/kibana/bin/kibana'], stdout = PIPE, stderr = PIPE, shell = False) 
+child = Popen(['/kibana/bin/kibana'], stdout = PIPE, stderr = STDOUT, shell = False) 
 child.communicate()
 sys.exit(child.returncode)
