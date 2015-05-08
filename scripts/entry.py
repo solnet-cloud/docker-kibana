@@ -3,15 +3,22 @@
 # starts up kibana. 
 
 # Import required libaries
-import sys,os
-import argparse
-import urlparse
-import requests
-import json
+import sys,os           # OS Libraries
+import argparse         # Parse Arguments
 from tempfile import mkstemp
+                        # Make temp files (for templates
 from shutil import move
-from requests.exceptions import ConnectionError
+                        # Move files (for templates)
 from subprocess import Popen, PIPE, STDOUT
+                        # Open up a process
+
+# Specific to to this script
+import urlparse         # Allows you to check the validity of a URL
+import requests         # Allows you to perform requests (like curl)
+import json             # Allows you to decode/encode json
+
+from requests.exceptions import ConnectionError
+                        # Handle request ConenctionError exceptions gracefully.
 
 # Argument Parser
 argparser = argparse.ArgumentParser(description='Run a docker container containing a Kibana Instance')
@@ -76,12 +83,17 @@ os.close(fh)
 os.remove(file_path)
 move(abs_path, file_path)
 
-child = Popen(['/kibana/bin/kibana'], stdout = PIPE, stderr = STDOUT, shell = False) 
+# Spawn the child
+#child = Popen(['/kibana/bin/kibana'], stdout = PIPE, stderr = STDOUT, shell = False) 
+child = Popen(['ls','-l','/'], stdout = PIPE, stderr = STDOUT, shell = False) 
 
 # Reopen stdout as unbuffered:
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
+# Output any log items to Docker
 for line in iter(child.stdout.readline, ''):
     sys.stdout.write(line)
-    
+
+# If the process terminates, read it's errorcode
+print "We're exiting!"
 sys.exit(child.returncode)
