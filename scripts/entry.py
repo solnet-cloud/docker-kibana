@@ -77,5 +77,7 @@ os.remove(file_path)
 move(abs_path, file_path)
 
 child = Popen(['/kibana/bin/kibana'], stdout = PIPE, stderr = STDOUT, shell = False) 
-child.communicate()
+for line in iter(process.stdout.readline, ''):
+    sys.stdout.write(line)
+    f.write(line)
 sys.exit(child.returncode)
