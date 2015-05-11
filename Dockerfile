@@ -19,6 +19,9 @@ LABEL Description="This image is used to stand up an unsecured kibana instance. 
 --es_url (no default; required) argument on startup" Version="4.0.2"
 
 # Patch notes:
+# Version 4.0.2-r2
+#       - Created a more generic template loader to be used in other entry scripts
+#       - Generalised the entry script
 # Version 4.0.2-r1
 #       - Moved kibana.yml to templates as it has a varible in it that is maintained by the entry script.
 #       - Rewrote the entry script in python
@@ -31,13 +34,14 @@ ENV KB_PKG_NAME kibana-4.0.2-linux-x64
 # Install any required preqs
 RUN \
     apt-get update && \
-    apt-get install wget python python-requests -y && \
+    apt-get install wget python python-requests python-jinja2 -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Prepare the various directories in /kb-data/
 RUN \
-    mkdir /kb-data
+    mkdir /kb-data && \
+    mkdir /kb-templates
 
 # Install Kibana and delete the Kibana tarball
 RUN \
@@ -48,8 +52,14 @@ RUN \
   mv /$KB_PKG_NAME /kibana && \
   rm /kibana/config/kibana.yml
   
-# Mount the configuration files
-ADD templates/kibana.yml /kibana/config/kibana.yml
+# Mount the configuration files, entry script and templates
+# Templates
+ADD templates/kibana.yml /kb-templates/kibana.yml
+
+# Configuration Files
+# None
+
+# Entry Script
 ADD scripts/entry.py /usr/local/bin/entry
 RUN chmod +x /usr/local/bin/entry
 

@@ -5,7 +5,7 @@ port: 5601
 host: "0.0.0.0"
 
 # The Elasticsearch instance to use for all your queries.
-elasticsearch_url: "{{elasticsearchURL}}"
+elasticsearch_url: "{{ elasticsearchURL }}"
 # This needs to be configured! localhost:9200 will not work inside a container
 
 # preserve_elasticsearch_host true will send the hostname specified in `elasticsearch`. If you set it to false,
