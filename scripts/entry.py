@@ -139,7 +139,7 @@ for template_item in template_list:
 
     # Change owner and group
     try:
-        template_list[template_item]['uid'] = pwd.getpwnam(template_list[template_item]['user'])
+        template_list[template_item]['uid'] = pwd.getpwnam(template_list[template_item]['user']).pw_uid
     except KeyError as e:
         errormsg = "The user %s does not exist for template %s" % template_list[template_item]['user'], template_item
         errormsg += "(returned %s), terminating..." % e
@@ -147,7 +147,7 @@ for template_item in template_list:
         sys.exit(0) # This should be a return 0 to prevent the container from restarting
 
     try:
-        template_list[template_item]['gid'] = grp.getgrnam(template_list[template_item]['group'])
+        template_list[template_item]['gid'] = grp.getgrnam(template_list[template_item]['group']).gr_gid
     except KeyError as e:
         errormsg = "The group %s does not exist for template %s" % template_list[template_item]['group'], template_item
         errormsg += "(returned %s), terminating..." % e
