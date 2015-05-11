@@ -155,9 +155,9 @@ for template_item in template_list:
         sys.exit(0) # This should be a return 0 to prevent the container from restarting
 
     try:
-        os.chown( path = template_list[template_item]['path'],
-                  uid  = template_list[template_item]['uid'],
-                  gid  = template_list[template_item]['gid'] )
+        os.chown(template_list[template_item]['path'],
+                 template_list[template_item]['uid'],
+                 template_list[template_item]['gid'])
     except OSError as e:
         errormsg = "The file %s could not be chowned for template" % template_list[template_item]['path']
         errormsg += " %s (returned %s), terminating..." % template_item, e
@@ -166,8 +166,8 @@ for template_item in template_list:
 
     # Change premisions
     try:
-        os.chmod( path = template_list[template_item]['path'],
-                  mode = template_list[template_item]['mode'] )
+        os.chmod(template_list[template_item]['path'],
+                 template_list[template_item]['mode'])
     except OSError as e:
         errormsg = "The file %s could not be chmoded for template" % template_list[template_item]['path']
         errormsg += " %s (returned %s), terminating..." % template_item, e
