@@ -46,8 +46,6 @@ argparser.add_argument('--kibana-index','-i',
                        help='The index Kiabana should use for logstash indexing, defaults to ".kibana"',
                        default=".kibana")
 
-argparser.add_argument('--printcfg',action='store_true') #TODO: Remove
-
 # KB SSL Termination
 argparser_ssl = argparser.add_argument_group('ssl',
                                              'Arguments for when you want Kibana to use SSL termination' )
@@ -109,7 +107,6 @@ elif args.es_ssl_ca is not None:
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
         
 # Check the URL looks valid
-print args # TODO: Remove debug line
 parsed = urlparse.urlparse(args.es_url[0],'http')
 
 # RFC 1808 required // at the front of any URL, however it often ommited by users.
@@ -216,9 +213,7 @@ for template_item in template_list:
         errormsg = "The file %s could not be opened for writing for template" % template_list[template_item]['path']
         errormsg += " %s (returned %s), terminating..." % template_item, e
         print errormsg
-        sys.exit(0) # This should be a return 0 to prevent the container from restarting
-
-    print template_list[template_item]['template'].render(template_list[template_item]['context']) #TODO: Remove
+        sys.exit(0) # This should be a return 0 to prevent the container from restarti
     
     # Stream
     template_list[template_item]['stream'] = template_list[template_item]['template'].\
@@ -269,8 +264,8 @@ for template_item in template_list:
 # SPAWN CHILD                                                                                                          #
 ########################################################################################################################
 # Spawn the child
-exit (0) #TODO: Remove
-child_path = ['/kibana/bin/kibana']
+#child_path = ['/kibana/bin/kibana']
+child_path = ['/bin/cat', template_list['kibana.yml']['path'] ]
 child = Popen(child_path, stdout = PIPE, stderr = STDOUT, shell = False) 
 
 # Reopen stdout as unbuffered. This will mean log messages will appear as soon as they become avaliable.
