@@ -191,6 +191,8 @@ template_dict = { 'context' : { # Subsitutions to be performed
                   'user'    : 'root',
                   'group'   : 'root',
                   'mode'    : 0644 }
+template_list[template_name] = template_dict
+
 # Load in the files from the folder
 template_loader = FileSystemLoader(template_location)
 template_env = TemplateEnvironment(loader=template_loader)
