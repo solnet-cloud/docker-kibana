@@ -54,11 +54,11 @@ argparser_ssl = argparser.add_argument_group('ssl',
 argparser_ssl.add_argument('--kb-ssl-crt', '-r',
                              action='store',
                              nargs='?',
-                             help='Certificate for SSL termination, under the %s volume') % ssl_path
+                             help='Certificate for SSL termination, under the %s volume' % ssl_path)
 argparser_ssl.add_argument('--kb-ssl-key', '-k',
                              action='store',
                              nargs='?',
-                             help='SSL Key for SSL termination, under the %s volume') % ssl_path
+                             help='SSL Key for SSL termination, under the %s volume' % ssl_path)
 
 # ES Authentication
 argparser_creds = argparser.add_argument_group('credentials',
@@ -76,15 +76,15 @@ argparser_creds.add_argument('--es-password', '-p',
 argparser_creds.add_argument('--es-ssl-crt', '-R',
                              action='store',
                              nargs='?',
-                             help='Certificate for client certificate authentication, under the %s volume') % ssl_path
+                             help='Certificate for client certificate authentication, under the %s volume' % ssl_path)
 argparser_creds.add_argument('--es-ssl-key', '-K',
                              action='store',
                              nargs='?',
-                             help='SSL Key for client certificate authentication, under the %s volume') % ssl_path
+                             help='SSL Key for client certificate authentication, under the %s volume' % ssl_path)
 argparser_creds.add_argument('--es-ssl-ca', '-C',
                              action='store',
                              nargs='?',
-                             help='CA Certificate for SSL, under the %s volume') % ssl_path
+                             help='CA Certificate for SSL, under the %s volume' % ssl_path)
 argparser_creds.add_argument('--ignore-ssl',
                              action='store_true',
                              nargs='?',
