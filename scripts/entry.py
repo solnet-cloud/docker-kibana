@@ -38,8 +38,7 @@ argparser = argparse.ArgumentParser(description='Run a docker container containi
 argparser.add_argument('es-url',
                        action='store',
                        nargs=1,
-                       help='The URL this container should use to access Elasticsearch',
-                       required=True)
+                       help='The URL this container should use to access Elasticsearch')
 
 argparser.add_argument('--kibana-index','-i',
                        action='store',
