@@ -88,8 +88,7 @@ argparser_creds.add_argument('--es-ssl-ca', '-C',
 argparser_creds.add_argument('--ignore-ssl',
                              action='store_true',
                              nargs='?',
-                             help='Ignore SSL Validation Errors when connecting to ES (for testing). Note this' +
-                             ' will make a provided CA file redundant')
+                             help='Ignore SSL Validation Errors. Will make --es-ssl-ca redundant. (Testing)')
 try:
     args = argparser.parse_args()
 except SystemExit:
