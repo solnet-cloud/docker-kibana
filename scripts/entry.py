@@ -87,7 +87,6 @@ argparser_creds.add_argument('--es-ssl-ca', '-C',
                              help='CA Certificate for SSL, under the %s volume' % ssl_path)
 argparser_creds.add_argument('--ignore-ssl',
                              action='store_true',
-                             nargs='?',
                              help='Ignore SSL Validation Errors. Will make --es-ssl-ca redundant. (Testing)')
 try:
     args = argparser.parse_args()
