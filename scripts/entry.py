@@ -32,17 +32,73 @@ from requests.exceptions import ConnectionError
 ########################################################################################################################
 argparser = argparse.ArgumentParser(description='Run a docker container containing a Kibana Instance')
 
-argparser.add_argument('--es_url',
+argparser.add_argument('es_url',
                        action='store',
                        nargs=1,
                        help='The URL this container should use to access Elasticsearch',
                        required=True)
 
-args = argparser.parse_args()
+argparser.add_argument('--kibana-index','-i',
+                       action='store',
+                       nargs='?',
+                       help='The index Kiabana should use for logstash indexing, defaults to ".kibana"',
+                       default=".kibana")
+
+argparser.add_argument('--printcfg',action='store_true') #TODO: Remove
+
+# KB SSL Termination
+argparser_ssl = argparser.add_argument_group('ssl',
+                                             'Arguments for when you want Kibana to use SSL termination' )
+argparser_ssl.add_argument('--kb_ssl_crt', '-r',
+                             action='store',
+                             nargs='?',
+                             help='Certificate for SSL termination, under the /kb-data/ssl volume')
+argparser_ssl.add_argument('--kb_ssl_key', '-k',
+                             action='store',
+                             nargs='?',
+                             help='SSL Key for SSL termination, under the /kb-data/ssl volume')
+
+# ES Authentication
+argparser_creds = argparser.add_argument_group('credentials',
+                                               'Arguments for when your ES instance has auth requirements' )
+
+
+argparser_creds.add_argument('--es_username', '-u',
+                             action='store',
+                             nargs='?',
+                             help='Username for basic auth')
+argparser_creds.add_argument('--es_password', '-p',
+                             action='store',
+                             nargs='?',
+                             help='Password for basic auth')
+argparser_creds.add_argument('--es_ssl_crt', '-R',
+                             action='store',
+                             nargs='?',
+                             help='Certificate for client certificate authentication, under the /kb-data/ssl volume')
+argparser_creds.add_argument('--es_ssl_key', '-K',
+                             action='store',
+                             nargs='?',
+                             help='SSL Key for client certificate authentication, under the /kb-data/ssl volume')
+argparser_creds.add_argument('--es_ssl_ca', '-C',
+                             action='store',
+                             nargs='?',
+                             help='CA Certificate for SSL, under the /kb-data/ssl volume')
+argparser_creds.add_argument('--ignore-ssl',
+                             action='store_true',
+                             nargs='?',
+                             help='Ignore SSL Validation Errors when connecting to ES (for testing)')
+try:
+    args = argparser.parse_args()
+except SystemExit:
+    sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+    
 ########################################################################################################################
 # ARGUMENT VERIRIFCATION                                                                                               #
 # This is where you put any logic to verify the arguments, and failure messages                                        #
 ########################################################################################################################
+# Check if a provided CA file exists and works
+# TODO
+
 # Check the URL looks valid
 parsed = urlparse.urlparse(args.es_url[0],'http')
 
@@ -55,6 +111,7 @@ if parsed[1] == '':
 # Check if the URL works
 try:
     request = requests.get(urlparse.urlunparse(parsed))
+    # TODO: Modify this to accept the included CA file if provided as well as ignore-ssl
 except ConnectionError as e:
     print "The URL provided will not estasblish a connection (returned %s), terminating..." % e
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
@@ -82,7 +139,11 @@ if not tagline == 'You Know, for Search':
     errormsg += " (returned %s), terminating..." % tagline
     print errormsg
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
-
+    
+# Check to make sure that the cert files and keys exist, and both were provided
+# TODO
+# Check to make sure that the username and password were both provided for basic auth
+# TODO
 ########################################################################################################################
 # TEMPLATES                                                                                                            #
 # This is where you manage any templates                                                                               #
@@ -97,14 +158,21 @@ template_list = {}
 ### kibana.yml ###
 template_name = 'kibana.yml'
 template_dict = { 'context' : { # Subsitutions to be performed
-                                'elasticsearchURL' : urlparse.urlunparse(parsed),
+                                'es_url'       : urlparse.urlunparse(parsed),
+                                'kibana_index' : args.kibana_index,
+                                'kb_ssl_crt'   : args.kb_ssl_crt,
+                                'kb_ssl_key'   : args.kb_ssl_key,
+                                'es_username'  : args.es_username,
+                                'es_password'  : args.es_password,
+                                'es_ssl_key'   : args.es_ssl_key,
+                                'es_ssl_crt'   : args.es_ssl_crt,
+                                'es_ssl_ca'    : args.es_ssl_ca,
+                                'es_ssl_ignor' : args.ignore_ssl,
                               },
                   'path'    : '/kibana/config/kibana.yml',
                   'user'    : 'root',
                   'group'   : 'root',
                   'mode'    : 0644 }
-template_list[template_name] = template_dict
-
 # Load in the files from the folder
 template_loader = FileSystemLoader(template_location)
 template_env = TemplateEnvironment(loader=template_loader)
@@ -133,7 +201,12 @@ for template_item in template_list:
     template_list[template_item]['stream'] = template_list[template_item]['template'].\
                                              stream(template_list[template_item]['context'])
 
-    # Dump to file
+    # Dump to file #TODO: Remove
+    if args.printcfg:
+        print '===> %s <===' % template_list[template_item]['path']
+        template_list[template_item]['stream'].dump(os.stdout)
+        continue
+   
     template_list[template_item]['stream'].dump(template_list[template_item]['file'])
     template_list[template_item]['file'].close()
 

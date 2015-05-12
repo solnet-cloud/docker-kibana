@@ -11,7 +11,7 @@ FROM ubuntu:14.04
 
 # Run Instruction:
 # When running use the following flags:
-#       --restart=on-failure
+#       --restart=on-failure  --log-driver=syslog
 
 # Information
 MAINTAINER Taylor Bertie <taylor.bertie@solnet.co.nz>
@@ -40,8 +40,9 @@ RUN \
 
 # Prepare the various directories in /kb-data/
 RUN \
-    mkdir /kb-data && \
-    mkdir /kb-templates
+    mkdir -p /kb-data && \
+    mkdir -p /kb-data/ssl && \
+    mkdir -p /kb-templates
 
 # Install Kibana and delete the Kibana tarball
 RUN \
@@ -51,6 +52,9 @@ RUN \
   rm -f $KB_PKG_NAME.tar.gz && \
   mv /$KB_PKG_NAME /kibana && \
   rm /kibana/config/kibana.yml
+  
+# Add volume for ssl client certificates
+VOLUME /kb-data/ssl/
   
 # Mount the configuration files, entry script and templates
 # Templates
