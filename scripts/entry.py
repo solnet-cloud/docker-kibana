@@ -109,6 +109,7 @@ elif args.es_ssl_ca is not None:
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
         
 # Check the URL looks valid
+print args # TODO: Remove debug line
 parsed = urlparse.urlparse(args.es_url[0],'http')
 
 # RFC 1808 required // at the front of any URL, however it often ommited by users.
