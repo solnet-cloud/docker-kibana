@@ -23,8 +23,11 @@ import urlparse         # Allows you to check the validity of a URL
 import requests         # Allows you to perform requests (like curl)
 import json             # Allows you to decode/encode json
 
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, SSLError
                         # Handle request ConenctionError exceptions gracefully.
+
+# Variables/Consts
+ssl_path = '/kb-data/ssl/'
 
 ########################################################################################################################
 # ARGUMENT PARSER                                                                                                      #
@@ -32,7 +35,7 @@ from requests.exceptions import ConnectionError
 ########################################################################################################################
 argparser = argparse.ArgumentParser(description='Run a docker container containing a Kibana Instance')
 
-argparser.add_argument('es_url',
+argparser.add_argument('es-url',
                        action='store',
                        nargs=1,
                        help='The URL this container should use to access Elasticsearch',
@@ -49,44 +52,45 @@ argparser.add_argument('--printcfg',action='store_true') #TODO: Remove
 # KB SSL Termination
 argparser_ssl = argparser.add_argument_group('ssl',
                                              'Arguments for when you want Kibana to use SSL termination' )
-argparser_ssl.add_argument('--kb_ssl_crt', '-r',
+argparser_ssl.add_argument('--kb-ssl-crt', '-r',
                              action='store',
                              nargs='?',
-                             help='Certificate for SSL termination, under the /kb-data/ssl volume')
-argparser_ssl.add_argument('--kb_ssl_key', '-k',
+                             help='Certificate for SSL termination, under the %s volume') % ssl_path
+argparser_ssl.add_argument('--kb-ssl-key', '-k',
                              action='store',
                              nargs='?',
-                             help='SSL Key for SSL termination, under the /kb-data/ssl volume')
+                             help='SSL Key for SSL termination, under the %s volume') % ssl_path
 
 # ES Authentication
 argparser_creds = argparser.add_argument_group('credentials',
                                                'Arguments for when your ES instance has auth requirements' )
 
 
-argparser_creds.add_argument('--es_username', '-u',
+argparser_creds.add_argument('--es-username', '-u',
                              action='store',
                              nargs='?',
                              help='Username for basic auth')
-argparser_creds.add_argument('--es_password', '-p',
+argparser_creds.add_argument('--es-password', '-p',
                              action='store',
                              nargs='?',
                              help='Password for basic auth')
-argparser_creds.add_argument('--es_ssl_crt', '-R',
+argparser_creds.add_argument('--es-ssl-crt', '-R',
                              action='store',
                              nargs='?',
-                             help='Certificate for client certificate authentication, under the /kb-data/ssl volume')
-argparser_creds.add_argument('--es_ssl_key', '-K',
+                             help='Certificate for client certificate authentication, under the %s volume') % ssl_path
+argparser_creds.add_argument('--es-ssl-key', '-K',
                              action='store',
                              nargs='?',
-                             help='SSL Key for client certificate authentication, under the /kb-data/ssl volume')
-argparser_creds.add_argument('--es_ssl_ca', '-C',
+                             help='SSL Key for client certificate authentication, under the %s volume') % ssl_path
+argparser_creds.add_argument('--es-ssl-ca', '-C',
                              action='store',
                              nargs='?',
-                             help='CA Certificate for SSL, under the /kb-data/ssl volume')
+                             help='CA Certificate for SSL, under the %s volume') % ssl_path
 argparser_creds.add_argument('--ignore-ssl',
                              action='store_true',
                              nargs='?',
-                             help='Ignore SSL Validation Errors when connecting to ES (for testing)')
+                             help='Ignore SSL Validation Errors when connecting to ES (for testing). Note this' +
+                             ' will make a provided CA file redundant')
 try:
     args = argparser.parse_args()
 except SystemExit:
@@ -96,9 +100,17 @@ except SystemExit:
 # ARGUMENT VERIRIFCATION                                                                                               #
 # This is where you put any logic to verify the arguments, and failure messages                                        #
 ########################################################################################################################
+ssl_verify = not args.ignore_ssl
 # Check if a provided CA file exists and works
-# TODO
-
+if args.es_ssl_ca is not None and os.path.isfile(ssl_path + args.es_ssl_ca):
+    # A CA file was provided and it appears to be a valid file, setting this to be the verify string 
+    if ssl_verify:
+        ssl_verify = ssl_path + args.es_ssl_ca
+else:
+    errormsg = "The CA file provided under --es-ssl-ca (%s) was not accessible. " % ssl_path + args.es_ssl_ca
+    errormsg += "Please provided a valid file, terminating..." 
+    sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+        
 # Check the URL looks valid
 parsed = urlparse.urlparse(args.es_url[0],'http')
 
@@ -110,11 +122,21 @@ if parsed[1] == '':
 
 # Check if the URL works
 try:
-    request = requests.get(urlparse.urlunparse(parsed))
-    # TODO: Modify this to accept the included CA file if provided as well as ignore-ssl
+    request = requests.get(urlparse.urlunparse(parsed), verify=ssl_verify)
 except ConnectionError as e:
     print "The URL provided will not estasblish a connection (returned %s), terminating..." % e
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+except SSLError as e:
+    print "The URL provided did not pass SSL vertification (returned %s), terminating..." % e
+    sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+
+    
+#TODO: Remove testing code below
+try:
+    ssl_test_request = requests.get('https://www.google.com/', verify=True)
+except SSLError as e:
+    print "It looks like SSL veritifcation isn't working (returned %s, terminating..." % e
+    sys.exit(0)
     
 if not request.status_code == 200:
     print "The URL provided does not return a 200 status code (returned %s), terminating..." % request.status_code
@@ -166,7 +188,8 @@ template_dict = { 'context' : { # Subsitutions to be performed
                                 'es_password'  : args.es_password,
                                 'es_ssl_key'   : args.es_ssl_key,
                                 'es_ssl_crt'   : args.es_ssl_crt,
-                                'es_ssl_ca'    : args.es_ssl_ca,
+                                'es_ssl_ca'    : args.es_ssl_ca if ssl_verify else None,
+                                    # No point providing a CA file if we are not going to validate against it
                                 'es_ssl_ignor' : args.ignore_ssl,
                               },
                   'path'    : '/kibana/config/kibana.yml',
