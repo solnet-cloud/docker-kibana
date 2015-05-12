@@ -16,7 +16,7 @@ FROM ubuntu:14.04
 # Information
 MAINTAINER Taylor Bertie <taylor.bertie@solnet.co.nz>
 LABEL Description="This image is used to stand up an unsecured kibana instance. Provide the elasticsearch URL as the \
---es_url (no default; required) argument on startup" Version="4.0.2"
+argument (no default; required) on startup" Version="4.0.2"
 
 # Patch notes:
 # Version 4.0.2-r2
