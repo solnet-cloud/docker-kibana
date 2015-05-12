@@ -272,6 +272,7 @@ for template_item in template_list:
 # SPAWN CHILD                                                                                                          #
 ########################################################################################################################
 # Spawn the child
+exit (0) #TODO: Remove
 child_path = ['/kibana/bin/kibana']
 child = Popen(child_path, stdout = PIPE, stderr = STDOUT, shell = False) 
 
