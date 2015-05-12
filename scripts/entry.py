@@ -218,16 +218,13 @@ for template_item in template_list:
         print errormsg
         sys.exit(0) # This should be a return 0 to prevent the container from restarting
 
+    print template_list[template_item]['template'].render(template_list[template_item]['context']) #TODO: Remove
+    
     # Stream
     template_list[template_item]['stream'] = template_list[template_item]['template'].\
                                              stream(template_list[template_item]['context'])
 
-    # Dump to file #TODO: Remove
-    if args.printcfg:
-        print '===> %s <===' % template_list[template_item]['path']
-        template_list[template_item]['stream'].dump(os.stdout)
-        continue
-   
+    # Submit to file
     template_list[template_item]['stream'].dump(template_list[template_item]['file'])
     template_list[template_item]['file'].close()
 
