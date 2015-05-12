@@ -35,7 +35,7 @@ ssl_path = '/kb-data/ssl/'
 ########################################################################################################################
 argparser = argparse.ArgumentParser(description='Run a docker container containing a Kibana Instance')
 
-argparser.add_argument('es-url',
+argparser.add_argument('es_url', # Should be underscore
                        action='store',
                        nargs=1,
                        help='The URL this container should use to access Elasticsearch')
