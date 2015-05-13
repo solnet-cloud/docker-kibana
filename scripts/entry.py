@@ -101,7 +101,7 @@ if args.es_ssl_ca is not None and os.path.isfile(ssl_path + args.es_ssl_ca):
     # A CA file was provided and it appears to be a valid file, setting this to be the verify string 
     if ssl_verify:
         ssl_verify = ssl_path + args.es_ssl_ca
-elif args.es_ssl_ca is not None:
+elif args.es_ssl_ca is not None and ssl_verify:
     errormsg = "The CA file provided under --es-ssl-ca (%s) was not accessible. " % (ssl_path + args.es_ssl_ca)
     errormsg += "Please provided a valid file, terminating..."
     print errormsg
