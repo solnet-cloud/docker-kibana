@@ -31,7 +31,7 @@ kibana_elasticsearch_password: {{ es_password }}
 #kibana_elasticsearch_password: pass
 {% endif %}
 # If your Elasticsearch requires client certificate and key
-{% if es_ssl_crt not none() %}
+{% if es_ssl_crt is not none() %}
 kibana_elasticsearch_client_crt: /kb-data/ssl/{{ es_ssl_crt }}
 {% else %}
 # kibana_elasticsearch_client_crt: /path/to/your/client.crt
