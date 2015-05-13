@@ -179,6 +179,7 @@ for pair in (args.es_ssl_crt, args.es_ssl_key, 'ES'), (args.kb_ssl_crt, args.kb_
         print errormsg
         sys.exit(0) # This should be a return 0 to prevent the container from restarting.
         
+    print 'Yes I actually did verify the certs!' #TODO: Remove
 # Check to make sure that the username and password were both provided for basic auth
 if (args.es_username is not None) ^ (args.es_password is not None): # ^ = xor
     print "The arguments --es-username and --es-password must be provided together, terminating..."
@@ -351,8 +352,8 @@ for template_item in template_list:
 # SPAWN CHILD                                                                                                          #
 ########################################################################################################################
 # Spawn the child
-#child_path = ['/kibana/bin/kibana']
-child_path = ['/bin/cat', template_list['kibana.yml']['path'] ]
+child_path = ['/kibana/bin/kibana']
+#child_path = ['/bin/cat', template_list['kibana.yml']['path'] ]
 child = Popen(child_path, stdout = PIPE, stderr = STDOUT, shell = False) 
 
 # Reopen stdout as unbuffered. This will mean log messages will appear as soon as they become avaliable.
