@@ -25,18 +25,18 @@ kibana_elasticsearch_username: {{ es_username }}
 {% else %}
 #kibana_elasticsearch_username: user
 {% endif %}
-{% if not none(es_password) %}
+{% if es_password is not none() %}
 kibana_elasticsearch_password: {{ es_password }}
 {% else %}
 #kibana_elasticsearch_password: pass
 {% endif %}
 # If your Elasticsearch requires client certificate and key
-{% if not none(es_ssl_crt) %}
+{% if es_ssl_crt not none() %}
 kibana_elasticsearch_client_crt: /kb-data/ssl/{{ es_ssl_crt }}
 {% else %}
 # kibana_elasticsearch_client_crt: /path/to/your/client.crt
 {% endif %}
-{% if not none(es_ssl_key) %}
+{% if es_ssl_key is not none() %}
 kibana_elasticsearch_client_key: /kb-data/ssl/{{ es_ssl_key }}
 {% else %}
 # kibana_elasticsearch_client_key: /path/to/your/client.key
@@ -44,7 +44,7 @@ kibana_elasticsearch_client_key: /kb-data/ssl/{{ es_ssl_key }}
 
 # If you need to provide a CA certificate for your Elasticsarech instance, put
 # the path of the pem file here.
-{% if not none(es_ssl_ca) %}
+{% if es_ssl_ca is not none() %}
 ca: /kb-data/ssl/{{ es_ssl_ca }}
 {% else %}
 # ca: /path/to/your/CA.pem
@@ -70,12 +70,12 @@ verify_ssl: true
 {% endif %}
 
 # SSL for outgoing requests from the Kibana Server (PEM formatted)
-{% if not none(kb_ssl_key) %}
+{% if kb_ssl_key is not none() %}
 ssl_key_file: /kb-data/ssl/{{ kb_ssl_key }}
 {% else %}
 # ssl_key_file: /path/to/your/server.key
 {% endif %}
-{% if not none(kb_ssl_crt) %}
+{% if kb_ssl_crt is not none() %}
 ssl_cert_file: /kb-data/ssl/{{ kb_ssl_crt }}
 {% else %}
 # ssl_cert_file: /path/to/your/server.crt
