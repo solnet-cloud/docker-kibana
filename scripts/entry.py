@@ -127,8 +127,10 @@ for file in (args.es_ssl_crt, 'ES Certificate'), (args.es_ssl_key, 'ES Key'), \
         sys.exit(0) # This should be a return 0 to prevent the container from restarting
         
 for pair in (args.es_ssl_crt, args.es_ssl_key, 'ES'), (args.kb_ssl_crt, args.kb_ssl_key, 'KB'):
+    print 'testing %s and %s' % pair[0], args.ignore_match_errors
     if pair[0] is None or args.ignore_match_errors:
         continue # We don't need to do this if there are no files to check
+    print 'I did not skip'
     
     # Attempt to open the files
     try:
