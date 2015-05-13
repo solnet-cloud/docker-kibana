@@ -127,7 +127,7 @@ for file in (args.es_ssl_crt, 'ES Certificate'), (args.es_ssl_key, 'ES Key'), \
         sys.exit(0) # This should be a return 0 to prevent the container from restarting
         
 for pair in (args.es_ssl_crt, args.es_ssl_key, 'ES'), (args.kb_ssl_crt, args.kb_ssl_key, 'KB'):
-    if pair[0] is None:
+    if pair[0] is None or args.ignore_match_errors:
         continue # We don't need to do this if there are no files to check
     
     # Attempt to open the files
@@ -173,7 +173,7 @@ for pair in (args.es_ssl_crt, args.es_ssl_key, 'ES'), (args.kb_ssl_crt, args.kb_
     pub_mod = pub_der[1]
     key_mod = key_der[1]
     
-    if not args.ignore_match_errors and pub_mod != key_mod:
+    if pub_mod != key_mod:
         errormsg = "The files provided in the %s key pair do not appear to match," % pair[2]
         errormsg += " override with --ignore-match-errors, terminating..."
         print errormsg
