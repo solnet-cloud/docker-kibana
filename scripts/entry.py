@@ -102,7 +102,7 @@ if args.es_ssl_ca is not None and os.path.isfile(ssl_path + args.es_ssl_ca):
     if ssl_verify:
         ssl_verify = ssl_path + args.es_ssl_ca
 elif args.es_ssl_ca is not None:
-    errormsg = "The CA file provided under --es-ssl-ca (%s) was not accessible. " % ssl_path + args.es_ssl_ca
+    errormsg = "The CA file provided under --es-ssl-ca (%s) was not accessible. " % (ssl_path + args.es_ssl_ca)
     errormsg += "Please provided a valid file, terminating..."
     print errormsg
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
