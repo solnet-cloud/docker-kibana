@@ -127,7 +127,7 @@ for file in (args.es_ssl_crt, 'ES Certificate'), (args.es_ssl_key, 'ES Key'), \
         sys.exit(0) # This should be a return 0 to prevent the container from restarting
         
 for pair in (args.es_ssl_crt, args.es_ssl_key, 'ES'), (args.kb_ssl_crt, args.kb_ssl_key, 'KB'):
-    if pair[0] is none:
+    if pair[0] is None:
         continue # We don't need to do this if there are no files to check
     
     # Attempt to open the files
