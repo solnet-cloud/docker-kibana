@@ -34,7 +34,7 @@ ENV KB_PKG_NAME kibana-4.0.2-linux-x64
 # Install any required preqs
 RUN \
     apt-get update && \
-    apt-get install wget python python-requests python-jinja2 python-openssl -y && \
+    apt-get install wget python python-requests python-jinja2 python-openssl python-crypto -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
