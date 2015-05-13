@@ -23,12 +23,12 @@ kibana_index: "{{ kibana_index }}"
 {% if es_username is not none() -%}
 kibana_elasticsearch_username: {{ es_username }}
 {%- else -%}
-#kibana_elasticsearch_username: user
+# kibana_elasticsearch_username: user
 {%- endif %}
 {% if es_password is not none() -%}
 kibana_elasticsearch_password: {{ es_password }}
 {%- else -%}
-#kibana_elasticsearch_password: pass
+# kibana_elasticsearch_password: pass
 {%- endif %}
 # If your Elasticsearch requires client certificate and key
 {% if es_ssl_crt is not none() -%}
