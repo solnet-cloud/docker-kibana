@@ -12,6 +12,53 @@ FROM ubuntu:14.04
 # Run Instruction:
 # When running use the following flags:
 #       --restart=on-failure  --log-driver=syslog
+# The following command line arguments are supported.
+# usage: entry [-h] [--kibana-index [KIBANA_INDEX]] [--kb-ssl-crt [KB_SSL_CRT]]
+#              [--kb-ssl-key [KB_SSL_KEY]] [--ignore-match-errors]
+#              [--es-username [ES_USERNAME]] [--es-password [ES_PASSWORD]]
+#              [--es-ssl-crt [ES_SSL_CRT]] [--es-ssl-key [ES_SSL_KEY]]
+#              [--es-ssl-ca [ES_SSL_CA]] [--ignore-ssl]
+#             es_url
+
+# positional arguments:
+#   es_url                The URL this container should use to access
+#                         Elasticsearch
+#
+# optional arguments:
+#   -h, --help            show this help message and exit
+#   --kibana-index [KIBANA_INDEX], -i [KIBANA_INDEX]
+#                         The index Kiabana should use for logstash indexing,
+#                         defaults to ".kibana"
+# 
+# ssl:
+#   Arguments for when you want Kibana to use SSL termination
+# 
+#   --kb-ssl-crt [KB_SSL_CRT], -r [KB_SSL_CRT]
+#                         Certificate for SSL termination, under the /kb-
+#                         data/ssl/ volume
+#   --kb-ssl-key [KB_SSL_KEY], -k [KB_SSL_KEY]
+#                         SSL Key for SSL termination, under the /kb-data/ssl/
+#                         volume
+#   --ignore-match-errors
+#                         Ignore SSL certificate match errors. (Not recommended)
+# 
+# credentials:
+#   Arguments for when your ES instance has auth requirements
+# 
+#   --es-username [ES_USERNAME], -u [ES_USERNAME]
+#                         Username for basic auth
+#   --es-password [ES_PASSWORD], -p [ES_PASSWORD]
+#                         Password for basic auth
+#   --es-ssl-crt [ES_SSL_CRT], -R [ES_SSL_CRT]
+#                         Certificate for client certificate authentication,
+#                         under the /kb-data/ssl/ volume
+#   --es-ssl-key [ES_SSL_KEY], -K [ES_SSL_KEY]
+#                         SSL Key for client certificate authentication, under
+#                         the /kb-data/ssl/ volume
+#   --es-ssl-ca [ES_SSL_CA], -C [ES_SSL_CA]
+#                         CA Certificate for SSL, under the /kb-data/ssl/ volume
+#   --ignore-ssl          Ignore SSL Validation Errors. Will make --es-ssl-ca
+#                         redundant. (Testing)
 
 # Information
 MAINTAINER Taylor Bertie <taylor.bertie@solnet.co.nz>
