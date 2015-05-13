@@ -22,6 +22,8 @@ from jinja2.exceptions import TemplateNotFound
 import urlparse         # Allows you to check the validity of a URL
 import requests         # Allows you to perform requests (like curl)
 import json             # Allows you to decode/encode json
+import OpenSSL          # SSL Library for testing certificates
+from Crypto.Util import asn1 
 
 from requests.exceptions import ConnectionError, SSLError
                         # Handle request ConenctionError exceptions gracefully.
@@ -57,6 +59,9 @@ argparser_ssl.add_argument('--kb-ssl-key', '-k',
                              action='store',
                              nargs='?',
                              help='SSL Key for SSL termination, under the %s volume' % ssl_path)
+argparser_ssl.add_argument('--ignore-match-errors',
+                             action='store_true',
+                             help='Ignore SSL certificate match errors. (Not recommended)')
 
 # ES Authentication
 argparser_creds = argparser.add_argument_group('credentials',
@@ -97,16 +102,85 @@ except SystemExit:
 ########################################################################################################################
 ssl_verify = not args.ignore_ssl
 # Check if a provided CA file exists and works
-if args.es_ssl_ca is not None and os.path.isfile(ssl_path + args.es_ssl_ca):
-    # A CA file was provided and it appears to be a valid file, setting this to be the verify string 
-    if ssl_verify:
-        ssl_verify = ssl_path + args.es_ssl_ca
+if args.es_ssl_ca is not None and ssl_verify and os.path.isfile(ssl_path + args.es_ssl_ca):
+    # A CA file was provided and it appears to be a valid file, setting this to be the verify string
+    ssl_verify = ssl_path + args.es_ssl_ca
 elif args.es_ssl_ca is not None and ssl_verify:
-    errormsg = "The CA file provided under --es-ssl-ca (%s) was not accessible. " % (ssl_path + args.es_ssl_ca)
+    errormsg = "The CA file provided under --es-ssl-ca (%s) was not a valid file. " % (ssl_path + args.es_ssl_ca)
     errormsg += "Please provided a valid file, terminating..."
     print errormsg
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+    
+# Check to make sure that the cert files and keys exist, and both were provided
+if (args.es_ssl_crt is not None) ^ (args.es_ssl_key is not None): # ^ = xor
+    print "The arguments --es-ssl-crt and --es-ssl_key must be provided together, terminating..."
+    sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+
+if (args.kb_ssl_crt is not None) ^ (args.kb_ssl_key is not None): # ^ = xor
+    print "The arguments --kb-ssl-crt and --kb-ssl_key must be provided together, terminating..."
+    sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+
+for file in (args.es_ssl_crt, 'ES Certificate'), (args.es_ssl_key, 'ES Key'), \
+            (args.kb_ssl_crt, 'KB Certificate'), (args.kb_ssl_key, 'KB Key'):
+    if file[0] is not None and not os.path.isfile(ssl_path + file[0]):
+        print "The %s file provided was not a valid valid file. Please provide a valid file, terminating..." % file[1]
+        sys.exit(0) # This should be a return 0 to prevent the container from restarting
         
+for pair in (args.es_ssl_crt, args.es_ssl_key, 'ES'), (args.kb_ssl_crt, args.kb_ssl_key, 'KB'):
+    # Attempt to open the files
+    try:
+        crt_fh = open(ssl_path + pair[0])
+        key_fh = open(ssl_path + pair[1])
+    except IOError as e:
+        print "One of the files provided in the %s key pair could not be opened, terminating..." % pair[2]
+
+    # Read in the files
+    crt_raw = crt_fh.read()
+    key_raw = key_fh.read()
+    
+    # Close the files
+    crt_fh.close()
+    key_fh.close()
+    
+    # Attempt to load the crt and key as objects
+    try:
+        crt = OpenSSL.crypto.load_certificate(OpenSSL.SSL.FILETYPE_PEM,crt_raw)
+        key = OpenSSL.crypto.load_privatekey(OpenSSL.SSL.FILETYPE_PEM,key_raw)
+    except OpenSSL.crypto.Error as e:
+        print "One of the files provided in the %s key pair is not valid (returned %s), terminating..." % pair[2], e
+        sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+    except:
+        e = sys.exc_info()[0]
+        print "Unrecognised exception occured, was unable to perform cert verification returned %s), terminating..." % e
+        sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+    
+    pub = crt.get_pubkey()
+        
+    # Convert to ASN1
+    pub_asn1 = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, pub)
+    key_asn1 = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, key)
+    
+    # Decode DER
+    pub_der = asn1.DerSequence()
+    key_der = asn1.DerSequence()
+    pub_der.decode(pub_asn1)
+    key_der.decode(key_asn1)
+    
+    # Get the modulus
+    pub_mod = pub_der[1]
+    key_mod = key_der[1]
+    
+    if not args.ignore_match_errors and pub_mod != key_mod:
+        errormsg = "The files provided in the %s key pair do not appear to match," % pair[2]
+        errormsg += " override with --ignore-match-errors, terminating..."
+        print errormsg
+        sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+        
+# Check to make sure that the username and password were both provided for basic auth
+if (args.es_username is not None) ^ (args.es_password is not None): # ^ = xor
+    print "The arguments --es-username and --es-password must be provided together, terminating..."
+    sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+
 # Check the URL looks valid
 parsed = urlparse.urlparse(args.es_url[0],'http')
 
@@ -116,24 +190,24 @@ parsed = urlparse.urlparse(args.es_url[0],'http')
 if parsed[1] == '':
     parsed = urlparse.urlparse('//' + args.es_url[0],'http')
 
-# Check if the URL works
+# Check if the URL works, include client certificate if provided and basic auth cerdentials if provided
 try:
-    request = requests.get(urlparse.urlunparse(parsed), verify=ssl_verify)
+    request = requests.get(urlparse.urlunparse(parsed),
+                           verify=ssl_verify,
+                           auth=(args.es_username, args.es_password) if args.es_username is not None else None,
+                           cert=(ssl_path + args.es_ssl_crt, ssl_path + args.es_ssl_key) \
+                               if args.es_ssl_crt is not None else None)
 except ConnectionError as e:
     print "The URL provided will not estasblish a connection (returned %s), terminating..." % e
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
 except SSLError as e:
     print "The URL provided did not pass SSL vertification (returned %s), terminating..." % e
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+except:
+    e = sys.exc_info()[0]
+    print "Unrecognised exception occured, was unable to perform test request (returned %s), terminating..." % e
+    sys.exit(0) # This should be a return 0 to prevent the container from restarting.
 
-    
-#TODO: Remove testing code below
-try:
-    ssl_test_request = requests.get('https://www.google.com/', verify=True)
-except SSLError as e:
-    print "It looks like SSL veritifcation isn't working (returned %s, terminating..." % e
-    sys.exit(0)
-    
 if not request.status_code == 200:
     print "The URL provided does not return a 200 status code (returned %s), terminating..." % request.status_code
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
@@ -143,6 +217,11 @@ try:
 except ValueError as e:
     print "The URL provided does not provide valid JSON output (returned %s), terminating..." % e
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+except:
+    e = sys.exc_info()[0]
+    print "Unrecognised exception occured, was unable to perform test request (returned %s), terminating..." % e
+    sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+
     
 try:
     tagline = rjson['tagline']
@@ -158,10 +237,6 @@ if not tagline == 'You Know, for Search':
     print errormsg
     sys.exit(0) # This should be a return 0 to prevent the container from restarting.
     
-# Check to make sure that the cert files and keys exist, and both were provided
-# TODO
-# Check to make sure that the username and password were both provided for basic auth
-# TODO
 ########################################################################################################################
 # TEMPLATES                                                                                                            #
 # This is where you manage any templates                                                                               #
@@ -219,12 +294,18 @@ for template_item in template_list:
         sys.exit(0) # This should be a return 0 to prevent the container from restarti
     
     # Stream
-    template_list[template_item]['stream'] = template_list[template_item]['template'].\
+    try:
+        template_list[template_item]['stream'] = template_list[template_item]['template'].\
                                              stream(template_list[template_item]['context'])
 
-    # Submit to file
-    template_list[template_item]['stream'].dump(template_list[template_item]['file'])
-    template_list[template_item]['file'].close()
+        # Submit to file
+        template_list[template_item]['stream'].dump(template_list[template_item]['file'])
+        template_list[template_item]['file'].close()
+    except:
+        e = sys.exc_info()[0]
+        print "Unrecognised exception occured, was unable to create template (returned %s), terminating..." % e
+        sys.exit(0) # This should be a return 0 to prevent the container from restarting.
+
 
     # Change owner and group
     try:
