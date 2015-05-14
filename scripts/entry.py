@@ -300,10 +300,10 @@ for template_item in template_list:
         sys.exit(0) # This should be a return 0 to prevent the container from restarti
     
     # Stream
-    try:
-        template_list[template_item]['render'] = template_list[template_item]['template'].\
+    template_list[template_item]['render'] = template_list[template_item]['template'].\
                                              render(template_list[template_item]['context'])
 
+    try:
         # Submit to file
         template_list[template_item]['file'].write(template_list[template_item]['render'])
         template_list[template_item]['file'].close()
