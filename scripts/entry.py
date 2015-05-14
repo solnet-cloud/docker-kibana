@@ -301,11 +301,11 @@ for template_item in template_list:
     
     # Stream
     try:
-        template_list[template_item]['stream'] = template_list[template_item]['template'].\
-                                             stream(template_list[template_item]['context'])
+        template_list[template_item]['render'] = template_list[template_item]['template'].\
+                                             render(template_list[template_item]['context'])
 
         # Submit to file
-        template_list[template_item]['stream'].dump(template_list[template_item]['file'])
+        template_list[template_item]['file'].write(template_list[template_item]['render'])
         template_list[template_item]['file'].close()
     except:
         e = sys.exc_info()[0]
