@@ -7,7 +7,7 @@ This Docker build builds on top of a Ubuntu image to provide a working Kibana in
 
 Under the most basic usage you will simply provide the Elasticsearch URL that the instance will be connecting to. It is also recommended you redirect logs to syslog (requires Docker 1.6) and use restart on-failure.
 
-    docker run -d --restart=on-failure --log-driver=syslog solnetcloud/docker-kibana:latest http://172.16.1.45:9200/
+    docker run -d --restart=on-failure --log-driver=syslog solnetcloud/kibana:latest http://172.16.1.45:9200/
 
 Please note that you can tell Kibana to SSL terminate using --kb-ssl-crt and --kb-ssl-key, and also supports connecting to an Elasticsearch instance with SSL, SSL with client certificates, and HTTP Basic Auth. You can also override the default Kibana Index.
 
