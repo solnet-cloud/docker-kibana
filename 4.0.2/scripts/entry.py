@@ -285,7 +285,7 @@ for template_item in template_list:
     try:
         template_list[template_item]['template'] = template_env.get_template(template_item)
     except TemplateNotFound as e:
-        errormsg = "The template file %s was not found in %s (returned %s)," % template_item, template_list, e
+        errormsg = "The template file %s was not found in %s (returned %s)," % (template_item, template_location, e)
         errormsg += " terminating..."
         print errormsg
         sys.exit(0) # This should be a return 0 to prevent the container from restarting
