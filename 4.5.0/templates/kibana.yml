@@ -1,0 +1,98 @@
+# Kibana is served by a back end server. This controls which port to use.
+port: 5601
+
+# The host to bind the server to.
+host: "0.0.0.0"
+
+# The Elasticsearch instance to use for all your queries.
+elasticsearch_url: "{{ es_url }}"
+# This needs to be configured! localhost:9200 will not work inside a container
+
+# preserve_elasticsearch_host true will send the hostname specified in `elasticsearch`. If you set it to false,
+# then the host you use to connect to *this* Kibana instance will be sent.
+elasticsearch_preserve_host: true
+
+# Kibana uses an index in Elasticsearch to store saved searches, visualizations
+# and dashboards. It will create a new index if it doesn't already exist.
+kibana_index: "{{ kibana_index }}"
+
+# If your Elasticsearch is protected with basic auth, this is the user credentials
+# used by the Kibana server to perform maintence on the kibana_index at statup. Your Kibana
+# users will still need to authenticate with Elasticsearch (which is proxied thorugh
+# the Kibana server)
+{% if es_username is not none() -%}
+kibana_elasticsearch_username: {{ es_username }}
+{%- else -%}
+# kibana_elasticsearch_username: user
+{%- endif %}
+{% if es_password is not none() -%}
+kibana_elasticsearch_password: {{ es_password }}
+{%- else -%}
+# kibana_elasticsearch_password: pass
+{%- endif %}
+# If your Elasticsearch requires client certificate and key
+{% if es_ssl_crt is not none() -%}
+kibana_elasticsearch_client_crt: /kb-data/ssl/{{ es_ssl_crt }}
+{%- else -%}
+# kibana_elasticsearch_client_crt: /path/to/your/client.crt
+{%- endif %}
+{% if es_ssl_key is not none() -%}
+kibana_elasticsearch_client_key: /kb-data/ssl/{{ es_ssl_key }}
+{%- else -%}
+# kibana_elasticsearch_client_key: /path/to/your/client.key
+{%- endif %}
+
+# If you need to provide a CA certificate for your Elasticsarech instance, put
+# the path of the pem file here.
+{% if es_ssl_ca is not none() -%}
+ca: /kb-data/ssl/{{ es_ssl_ca }}
+{%- else -%}
+# ca: /path/to/your/CA.pem
+{%- endif %}
+
+# The default application to load.
+default_app_id: "discover"
+
+# Time in milliseconds to wait for responses from the back end or elasticsearch.
+# This must be > 0
+request_timeout: 300000
+
+# Time in milliseconds for Elasticsearch to wait for responses from shards.
+# Set to 0 to disable.
+shard_timeout: 0
+
+# Set to false to have a complete disregard for the validity of the SSL
+# certificate.
+{% if es_ssl_ignor -%}
+verify_ssl: false
+{%- else -%}
+verify_ssl: true
+{%- endif %}
+
+# SSL for outgoing requests from the Kibana Server (PEM formatted)
+{% if kb_ssl_key is not none() -%}
+ssl_key_file: /kb-data/ssl/{{ kb_ssl_key }}
+{% else %}
+# ssl_key_file: /path/to/your/server.key
+{%- endif %}
+{% if kb_ssl_crt is not none() -%}
+ssl_cert_file: /kb-data/ssl/{{ kb_ssl_crt }}
+{%- else -%}
+# ssl_cert_file: /path/to/your/server.crt
+{%- endif %}
+
+# Set the path to where you would like the process id file to be created.
+# pid_file: /var/run/kibana.pid
+
+# Plugins that are included in the build, and no longer found in the plugins/ folder
+bundled_plugin_ids:
+ - plugins/dashboard/index
+ - plugins/discover/index
+ - plugins/doc/index
+ - plugins/kibana/index
+ - plugins/markdown_vis/index
+ - plugins/metric_vis/index
+ - plugins/settings/index
+ - plugins/table_vis/index
+ - plugins/vis_types/index
+ - plugins/visualize/index
